@@ -1,0 +1,4 @@
+github.com/google/uuid v1.1.2 h1:EVhdT+1Kseyi1/pUmXKaFxYsDNy9RQYkMWRH68J/W7Y=
+github.com/google/uuid v1.1.2/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
+github.com/shuhrat-shokirov/wallet v1.1.0 h1:3BQsHK1E0sR0/dV7V3WCFbmrecmqiy8Dwz8Pq2ts598=
+github.com/shuhrat-shokirov/wallet v1.1.0/go.mod h1:3p4A4mNV0SHhTyEsSLA6psdK2uW7MndIBewW//egJLo=
