@@ -137,20 +137,4 @@ func (s *Service) FindPaymentByID(paymentID string) (*types.Payment, error) {
 // Reject is used to reject payments
 func (s *Service) Reject(paymentID string) error {
 	payment, err := s.FindPaymentByID(paymentID)
-
-	if err != nil {
-		return ErrPaymentNotFound
-	}
-
-	payment.Status = types.PaymentStatusFail
-
-	account, err := s.FindAccountByID(payment.AccountID)
-
-	if err != nil {
-		return ErrAccountNotFound
-	}
-
-	account.Balance += payment.Amount
-
-	return nil
 }
