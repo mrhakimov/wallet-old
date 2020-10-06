@@ -25,7 +25,7 @@ type Payment struct {
 	Status    PaymentStatus
 }
 
-// Favorite is used for featured payments
+// Favorite
 type Favorite struct {
 	ID        string
 	AccountID int64

@@ -25,15 +25,6 @@ type Payment struct {
 	Status    PaymentStatus
 }
 
-// Favorite is used for featured payments
-type Favorite struct {
-	ID        string
-	AccountID int64
-	Name      string
-	Amount    Money
-	Category  PaymentCategory
-}
-
 // Phone is used for telephone numbers
 type Phone string
 

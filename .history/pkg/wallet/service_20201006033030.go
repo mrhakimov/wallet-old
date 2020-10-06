@@ -30,7 +30,6 @@ type Service struct {
 	nextAccountID int64
 	accounts      []*types.Account
 	payments      []*types.Payment
-	favorites     []*types.Favorite
 }
 
 // RegisterAccount is used to register user by phone number
@@ -137,14 +136,14 @@ func (s *Service) FindPaymentByID(paymentID string) (*types.Payment, error) {
 }
 
 // FindFavoriteByID returns favorite payment by id
-func (s *Service) FindFavoriteByID(favoriteID string) (*types.Favorite, error) {
-	for _, favorite := range s.favorites {
-		if favorite.ID == favoriteID {
-			return favorite, nil
+func (s *Service) FindFavoriteByID(favoriteID int64) (*types.Account, error) {
+	for _, account := range s.accounts {
+		if account.ID == accountID {
+			return account, nil
 		}
 	}
 
-	return nil, ErrFavoriteNotFound
+	return nil, ErrAccountNotFound
 }
 
 // Reject is used to reject payments
@@ -182,42 +181,4 @@ func (s *Service) Repeat(paymentID string) (*types.Payment, error) {
 	}
 
 	return newPayment, nil
-}
-
-// FavoritePayment is used to create new favorite payment
-func (s *Service) FavoritePayment(paymentID string, name string) (*types.Favorite, error) {
-	payment, err := s.FindPaymentByID(paymentID)
-
-	if err != nil {
-		return nil, err
-	}
-
-	favoriteID := uuid.New().String()
-	favorite := &types.Favorite{
-		ID:        favoriteID,
-		AccountID: payment.AccountID,
-		Name:      name,
-		Amount:    payment.Amount,
-		Category:  payment.Category,
-	}
-
-	s.favorites = append(s.favorites, favorite)
-	return favorite, nil
-}
-
-// PayFromFavorite is just a wrapper for Pay
-func (s *Service) PayFromFavorite(favoriteID string) (*types.Payment, error) {
-	favorite, err := s.FindFavoriteByID(favoriteID)
-
-	if err != nil {
-		return nil, ErrFavoriteNotFound
-	}
-
-	payment, err := s.Pay(favorite.AccountID, favorite.Amount, favorite.Category)
-
-	if err != nil {
-		return nil, ErrPaymentNotFound
-	}
-
-	return payment, nil
 }

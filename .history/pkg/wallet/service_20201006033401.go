@@ -205,18 +205,15 @@ func (s *Service) FavoritePayment(paymentID string, name string) (*types.Favorit
 	return favorite, nil
 }
 
-// PayFromFavorite is just a wrapper for Pay
 func (s *Service) PayFromFavorite(favoriteID string) (*types.Payment, error) {
 	favorite, err := s.FindFavoriteByID(favoriteID)
-
 	if err != nil {
-		return nil, ErrFavoriteNotFound
+		return nil, err
 	}
 
 	payment, err := s.Pay(favorite.AccountID, favorite.Amount, favorite.Category)
-
 	if err != nil {
-		return nil, ErrPaymentNotFound
+		return nil, err
 	}
 
 	return payment, nil
