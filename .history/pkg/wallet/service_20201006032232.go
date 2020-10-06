@@ -163,10 +163,10 @@ func (s *Service) Repeat(paymentID string) (*types.Payment, error) {
 		return nil, ErrPaymentNotFound
 	}
 
-	newPayment, err := s.Pay(payment.AccountID, payment.Amount, payment.Category)
+	payment, err := s.Pay(pay.AccountID, pay.Amount, pay.Category)
 	if err != nil {
 		return nil, err
 	}
 
-	return newPayment, nil
+	return payment, nil
 }
