@@ -155,22 +155,6 @@ func (s *Service) Reject(paymentID string) error {
 	return nil
 }
 
-// Repeat is used to make one more same payment
 func (s *Service) Repeat(paymentID string) (*types.Payment, error) {
-	payment, err := s.FindPaymentByID(paymentID)
 
-	if err != nil {
-		return nil, ErrPaymentNotFound
-	}
-
-	newPaymentID := uuid.New().String()
-	newPayment := &types.Payment{
-		ID:        newPaymentID,
-		AccountID: payment.AccountID,
-		Amount:    payment.Amount,
-		Category:  payment.Category,
-		Status:    payment.Status,
-	}
-
-	return newPayment, nil
 }

@@ -171,6 +171,4 @@ func (s *Service) Repeat(paymentID string) (*types.Payment, error) {
 		Category:  payment.Category,
 		Status:    payment.Status,
 	}
-
-	return newPayment, nil
 }
