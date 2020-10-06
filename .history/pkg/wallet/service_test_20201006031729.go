@@ -53,6 +53,16 @@ func TestService_FindbyAccountById_success(t *testing.T) {
 	}
 }
 
+func TestService_FindByAccountByID_notFound(t *testing.T) {
+	svc := Service{}
+	svc.RegisterAccount("+992000000000")
+	_, err := svc.FindAccountByID(2)
+
+	if err != ErrAccountNotFound {
+		t.Error(err)
+	}
+}
+
 func TestFindPaymentByID_success(t *testing.T) {
 	svc := &Service{}
 
