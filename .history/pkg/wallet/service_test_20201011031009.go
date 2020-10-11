@@ -88,36 +88,6 @@ func TestFindPaymentByID_success(t *testing.T) {
 	}
 }
 
-func TestFindFavoriteByID_success(t *testing.T) {
-	svc := &Service{}
-
-	phone := types.Phone("+992000000000")
-
-	account, err := svc.RegisterAccount(phone)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	err = svc.Deposit(account.ID, 1000)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	pay, err := svc.Pay(account.ID, 500, "auto")
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	_, err = svc.FindFavoriteByID(pay.ID)
-	if err == nil {
-		t.Error(err)
-		return
-	}
-}
-
 func TestService_Reject_success(t *testing.T) {
 	svc := &Service{}
 
@@ -238,11 +208,6 @@ func TestService_Favorite_success_user(t *testing.T) {
 	if err != nil {
 		t.Errorf("PayFromFavorite() Error() can't for an favorite(%v): %v", paymentFavorite, err)
 	}
-
-	paymentFavoriteFail, err := svc.PayFromFavorite(payment.ID)
-	if err == nil {
-		t.Errorf("PayFromFavorite() Error() can't for an favorite(%v): %v", paymentFavoriteFail, err)
-	}
 }
 
 func TestService_ExportToFile(t *testing.T) {
@@ -258,22 +223,5 @@ func TestService_ExportToFile(t *testing.T) {
 		t.Errorf("method Deposit returned not nil error, error => %v", err)
 	}
 
-	err = svc.ExportToFile("../../data/accounts.txt")
-	if err != nil {
-		t.Error("Error occurred while exporting to file!", err)
-	}
-}
-
-func TestService_ImportFromFile(t *testing.T) {
-	svc := Service{}
-
-	err := svc.ImportFromFile("../../data/accounts.txt")
-	if err != nil {
-		t.Error("Error occurred while importing from file!", err)
-	}
-
-	err = svc.ImportFromFile("../../data/accountsFake.txt")
-	if err == nil {
-		t.Error("Error occurred while importing from file!", err)
-	}
+	err := svc.ExportToFile("../../data/accounts.txt")
 }

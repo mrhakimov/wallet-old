@@ -322,5 +322,5 @@ func (s *Service) ImportFromFile(path string) error {
 		})
 	}
 
-	return nil
+	return err
 }

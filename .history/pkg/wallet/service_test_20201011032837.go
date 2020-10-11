@@ -264,16 +264,21 @@ func TestService_ExportToFile(t *testing.T) {
 	}
 }
 
-func TestService_ImportFromFile(t *testing.T) {
+func TestService_ExportToFile(t *testing.T) {
 	svc := Service{}
 
-	err := svc.ImportFromFile("../../data/accounts.txt")
+	account, err := svc.RegisterAccount("+992000000001")
 	if err != nil {
-		t.Error("Error occurred while importing from file!", err)
+		t.Errorf("method RegisterAccount returned not nil error, account => %v", account)
 	}
 
-	err = svc.ImportFromFile("../../data/accountsFake.txt")
-	if err == nil {
-		t.Error("Error occurred while importing from file!", err)
+	err = svc.Deposit(account.ID, 100_00)
+	if err != nil {
+		t.Errorf("method Deposit returned not nil error, error => %v", err)
+	}
+
+	err = svc.ExportToFile("../../data/accounts.txt")
+	if err != nil {
+		t.Error("Error occurred while exporting to file!", err)
 	}
 }

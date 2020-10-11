@@ -2,11 +2,9 @@ package wallet
 
 import (
 	"errors"
-	"io"
 	"log"
 	"os"
 	"strconv"
-	"strings"
 
 	"github.com/google/uuid"
 
@@ -243,84 +241,15 @@ func (s *Service) ExportToFile(path string) error {
 		}
 	}()
 
-	for _, account := range s.accounts {
-		ID := strconv.FormatInt(int64(account.ID), 10) + ";"
+	for _, account := range s.getAccounts() {
+		ID := strconv.FormatInt(account.ID, 10) + ";"
 		phone := string(account.Phone) + ";"
 		balance := strconv.FormatInt(int64(account.Balance), 10)
-
 		_, err = file.Write([]byte(ID + phone + balance + "|"))
-
 		if err != nil {
 			log.Print(err)
-
 			return err
 		}
 	}
-
-	return nil
-}
-
-// ImportFromFile is used to read accounts from file
-func (s *Service) ImportFromFile(path string) error {
-	file, err := os.Open(path)
-
-	if err != nil {
-		log.Print(err)
-
-		return err
-	}
-
-	defer func() {
-		if err := file.Close(); err != nil {
-			log.Print(err)
-		}
-	}()
-
-	result := make([]byte, 0)
-	buff := make([]byte, 4)
-
-	for {
-		read, err := file.Read(buff)
-
-		if err == io.EOF {
-			break
-		}
-
-		if err != nil {
-			log.Print(err)
-
-			return err
-		}
-
-		result = append(result, buff[:read]...)
-	}
-
-	str := string(result)
-
-	for _, line := range strings.Split(str, "|") {
-		if len(line) == 0 {
-			return err
-		}
-
-		item := strings.Split(line, ";")
-		ID, err := strconv.ParseInt(item[0], 10, 64)
-
-		if err != nil {
-			return err
-		}
-
-		balance, err := strconv.ParseInt(item[2], 10, 64)
-
-		if err != nil {
-			return err
-		}
-
-		s.accounts = append(s.accounts, &types.Account{
-			ID:      ID,
-			Phone:   types.Phone(item[1]),
-			Balance: types.Money(balance),
-		})
-	}
-
 	return nil
 }

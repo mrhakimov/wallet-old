@@ -294,26 +294,15 @@ func (s *Service) ImportFromFile(path string) error {
 
 		result = append(result, buff[:read]...)
 	}
-
 	str := string(result)
-
 	for _, line := range strings.Split(str, "|") {
-		if len(line) == 0 {
+		if len(line) <= 0 {
 			return err
 		}
 
 		item := strings.Split(line, ";")
-		ID, err := strconv.ParseInt(item[0], 10, 64)
-
-		if err != nil {
-			return err
-		}
-
-		balance, err := strconv.ParseInt(item[2], 10, 64)
-
-		if err != nil {
-			return err
-		}
+		ID, _ := strconv.ParseInt(item[0], 10, 64)
+		balance, _ := strconv.ParseInt(item[2], 10, 64)
 
 		s.accounts = append(s.accounts, &types.Account{
 			ID:      ID,
@@ -322,5 +311,5 @@ func (s *Service) ImportFromFile(path string) error {
 		})
 	}
 
-	return nil
+	return err
 }

@@ -88,36 +88,6 @@ func TestFindPaymentByID_success(t *testing.T) {
 	}
 }
 
-func TestFindFavoriteByID_success(t *testing.T) {
-	svc := &Service{}
-
-	phone := types.Phone("+992000000000")
-
-	account, err := svc.RegisterAccount(phone)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	err = svc.Deposit(account.ID, 1000)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	pay, err := svc.Pay(account.ID, 500, "auto")
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	_, err = svc.FindFavoriteByID(pay.ID)
-	if err == nil {
-		t.Error(err)
-		return
-	}
-}
-
 func TestService_Reject_success(t *testing.T) {
 	svc := &Service{}
 
@@ -238,10 +208,71 @@ func TestService_Favorite_success_user(t *testing.T) {
 	if err != nil {
 		t.Errorf("PayFromFavorite() Error() can't for an favorite(%v): %v", paymentFavorite, err)
 	}
+}
 
-	paymentFavoriteFail, err := svc.PayFromFavorite(payment.ID)
-	if err == nil {
-		t.Errorf("PayFromFavorite() Error() can't for an favorite(%v): %v", paymentFavoriteFail, err)
+func TestService_FindFavoriteByID(t *testing.T) {
+	type fields struct {
+		nextAccountID int64
+		accounts      []*types.Account
+		payments      []*types.Payment
+		favorites     []*types.Favorite
+	}
+	type args struct {
+		favoriteID string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    *types.Favorite
+		wantErr bool
+	}{
+		{
+			name: "successFull find",
+			fields: fields{
+				nextAccountID: 0,
+				accounts:      Accounts(),
+				payments:      Payments(),
+				favorites:     Favorites(),
+			},
+			args: args{
+				favoriteID: defaultFavorite.ID,
+			},
+			want:    &defaultFavorite,
+			wantErr: false,
+		},
+		{
+			name: "successFull find",
+			fields: fields{
+				nextAccountID: 0,
+				accounts:      Accounts(),
+				payments:      Payments(),
+				favorites:     Favorites(),
+			},
+			args: args{
+				favoriteID: "nonExistingFavoriteID",
+			},
+			want:    nil,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &Service{
+				nextAccountID: tt.fields.nextAccountID,
+				accounts:      tt.fields.accounts,
+				payments:      tt.fields.payments,
+				favorites:     tt.fields.favorites,
+			}
+			got, err := s.FindFavoriteByID(tt.args.favoriteID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("FindFavoriteByID() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("FindFavoriteByID() got = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }
 
@@ -261,19 +292,5 @@ func TestService_ExportToFile(t *testing.T) {
 	err = svc.ExportToFile("../../data/accounts.txt")
 	if err != nil {
 		t.Error("Error occurred while exporting to file!", err)
-	}
-}
-
-func TestService_ImportFromFile(t *testing.T) {
-	svc := Service{}
-
-	err := svc.ImportFromFile("../../data/accounts.txt")
-	if err != nil {
-		t.Error("Error occurred while importing from file!", err)
-	}
-
-	err = svc.ImportFromFile("../../data/accountsFake.txt")
-	if err == nil {
-		t.Error("Error occurred while importing from file!", err)
 	}
 }

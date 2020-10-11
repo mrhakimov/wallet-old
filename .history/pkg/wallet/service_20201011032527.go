@@ -271,49 +271,34 @@ func (s *Service) ImportFromFile(path string) error {
 	}
 
 	defer func() {
-		if err := file.Close(); err != nil {
-			log.Print(err)
+		if closeErr := file.Close(); closeErr != nil {
+			log.Print(closeErr)
 		}
 	}()
 
-	result := make([]byte, 0)
+	content := make([]byte, 0)
 	buff := make([]byte, 4)
 
 	for {
 		read, err := file.Read(buff)
-
 		if err == io.EOF {
 			break
 		}
-
 		if err != nil {
 			log.Print(err)
-
 			return err
 		}
-
-		result = append(result, buff[:read]...)
+		content = append(content, buff[:read]...)
 	}
-
-	str := string(result)
-
+	str := string(content)
 	for _, line := range strings.Split(str, "|") {
-		if len(line) == 0 {
+		if len(line) <= 0 {
 			return err
 		}
 
 		item := strings.Split(line, ";")
-		ID, err := strconv.ParseInt(item[0], 10, 64)
-
-		if err != nil {
-			return err
-		}
-
-		balance, err := strconv.ParseInt(item[2], 10, 64)
-
-		if err != nil {
-			return err
-		}
+		ID, _ := strconv.ParseInt(item[0], 10, 64)
+		balance, _ := strconv.ParseInt(item[2], 10, 64)
 
 		s.accounts = append(s.accounts, &types.Account{
 			ID:      ID,
@@ -322,5 +307,5 @@ func (s *Service) ImportFromFile(path string) error {
 		})
 	}
 
-	return nil
+	return err
 }

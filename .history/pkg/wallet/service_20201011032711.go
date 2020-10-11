@@ -311,10 +311,6 @@ func (s *Service) ImportFromFile(path string) error {
 
 		balance, err := strconv.ParseInt(item[2], 10, 64)
 
-		if err != nil {
-			return err
-		}
-
 		s.accounts = append(s.accounts, &types.Account{
 			ID:      ID,
 			Phone:   types.Phone(item[1]),
@@ -322,5 +318,5 @@ func (s *Service) ImportFromFile(path string) error {
 		})
 	}
 
-	return nil
+	return err
 }

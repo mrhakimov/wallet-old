@@ -272,8 +272,8 @@ func TestService_ImportFromFile(t *testing.T) {
 		t.Error("Error occurred while importing from file!", err)
 	}
 
-	err = svc.ImportFromFile("../../data/accountsFake.txt")
-	if err == nil {
+	err = svc.ImportFromFile("../../data/accounts.txt")
+	if err != nil {
 		t.Error("Error occurred while importing from file!", err)
 	}
 }

@@ -239,7 +239,7 @@ func TestService_Favorite_success_user(t *testing.T) {
 		t.Errorf("PayFromFavorite() Error() can't for an favorite(%v): %v", paymentFavorite, err)
 	}
 
-	paymentFavoriteFail, err := svc.PayFromFavorite(payment.ID)
+	paymentFavoriteFail, err := svc.PayFromFavorite(favorite.ID)
 	if err == nil {
 		t.Errorf("PayFromFavorite() Error() can't for an favorite(%v): %v", paymentFavoriteFail, err)
 	}
@@ -261,19 +261,5 @@ func TestService_ExportToFile(t *testing.T) {
 	err = svc.ExportToFile("../../data/accounts.txt")
 	if err != nil {
 		t.Error("Error occurred while exporting to file!", err)
-	}
-}
-
-func TestService_ImportFromFile(t *testing.T) {
-	svc := Service{}
-
-	err := svc.ImportFromFile("../../data/accounts.txt")
-	if err != nil {
-		t.Error("Error occurred while importing from file!", err)
-	}
-
-	err = svc.ImportFromFile("../../data/accountsFake.txt")
-	if err == nil {
-		t.Error("Error occurred while importing from file!", err)
 	}
 }

@@ -308,12 +308,7 @@ func (s *Service) ImportFromFile(path string) error {
 		if err != nil {
 			return err
 		}
-
-		balance, err := strconv.ParseInt(item[2], 10, 64)
-
-		if err != nil {
-			return err
-		}
+		balance, _ := strconv.ParseInt(item[2], 10, 64)
 
 		s.accounts = append(s.accounts, &types.Account{
 			ID:      ID,
@@ -322,5 +317,5 @@ func (s *Service) ImportFromFile(path string) error {
 		})
 	}
 
-	return nil
+	return err
 }
