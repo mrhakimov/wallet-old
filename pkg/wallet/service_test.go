@@ -357,63 +357,63 @@ func TestService_Import_Fail(t *testing.T) {
 	}
 
 	err = svc.Import(wd + "/..")
-	if err != nil {
-		t.Error(err)
-	}
-}
-
-func TestService_Import_ParseError(t *testing.T) {
-	svc := Service{}
-
-	wd, err := os.Getwd()
-	if err != nil {
-		t.Error(err)
-	}
-
-	err = svc.Import(wd + "/test2")
 	if err == nil {
 		t.Error(err)
 	}
 }
 
-func TestService_Import_ParseErrorID(t *testing.T) {
-	svc := Service{}
+// func TestService_Import_ParseError(t *testing.T) {
+// 	svc := Service{}
 
-	wd, err := os.Getwd()
-	if err != nil {
-		t.Error(err)
-	}
+// 	wd, err := os.Getwd()
+// 	if err != nil {
+// 		t.Error(err)
+// 	}
 
-	err = svc.Import(wd + "/test3")
-	if err == nil {
-		t.Error(err)
-	}
-}
+// 	err = svc.Import(wd + "/test2")
+// 	if err == nil {
+// 		t.Error(err)
+// 	}
+// }
 
-func TestService_Import_TooLessArguments(t *testing.T) {
-	svc := Service{}
+// func TestService_Import_ParseErrorID(t *testing.T) {
+// 	svc := Service{}
 
-	wd, err := os.Getwd()
-	if err != nil {
-		t.Error(err)
-	}
+// 	wd, err := os.Getwd()
+// 	if err != nil {
+// 		t.Error(err)
+// 	}
 
-	err = svc.Import(wd + "/test4")
-	if err != nil {
-		t.Error(err)
-	}
-}
+// 	err = svc.Import(wd + "/test3")
+// 	if err == nil {
+// 		t.Error(err)
+// 	}
+// }
 
-func TestService_Import_ParsingError(t *testing.T) {
-	svc := Service{}
+// func TestService_Import_TooLessArguments(t *testing.T) {
+// 	svc := Service{}
 
-	wd, err := os.Getwd()
-	if err != nil {
-		t.Error(err)
-	}
+// 	wd, err := os.Getwd()
+// 	if err != nil {
+// 		t.Error(err)
+// 	}
 
-	err = svc.Import(wd + "/test5")
-	if err != nil {
-		t.Error(err)
-	}
-}
+// 	err = svc.Import(wd + "/test4")
+// 	if err != nil {
+// 		t.Error(err)
+// 	}
+// }
+
+// func TestService_Import_ParsingError(t *testing.T) {
+// 	svc := Service{}
+
+// 	wd, err := os.Getwd()
+// 	if err != nil {
+// 		t.Error(err)
+// 	}
+
+// 	err = svc.Import(wd + "/test5")
+// 	if err != nil {
+// 		t.Error(err)
+// 	}
+// }
