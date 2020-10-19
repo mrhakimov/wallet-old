@@ -357,7 +357,7 @@ func TestService_Import_Fail(t *testing.T) {
 	}
 
 	err = svc.Import(wd + "/..")
-	if err == nil {
+	if err != nil {
 		t.Error(err)
 	}
 }

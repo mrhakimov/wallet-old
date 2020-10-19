@@ -523,10 +523,12 @@ func (s *Service) Import(dir string) error {
 
 	dirPayment := dir + "/payments.dump"
 	filePayments, err := os.Open(dirPayment)
+
 	if err != nil {
 		log.Print(err)
-		return ErrFileNotFound
+		err = ErrFileNotFound
 	}
+
 	if err != ErrFileNotFound {
 		defer func() {
 			err := filePayments.Close()
@@ -667,10 +669,6 @@ func (s *Service) Import(dir string) error {
 				s.favorites = append(s.favorites, favorite)
 			}
 		}
-	}
-
-	if err == ErrFileNotFound {
-		return err
 	}
 
 	return nil
