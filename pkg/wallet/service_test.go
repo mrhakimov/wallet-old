@@ -1,6 +1,7 @@
 package wallet
 
 import (
+	"os"
 	"reflect"
 	"testing"
 
@@ -275,5 +276,130 @@ func TestService_ImportFromFile(t *testing.T) {
 	err = svc.ImportFromFile("../../data/accountsFake.txt")
 	if err == nil {
 		t.Error("Error occurred while importing from file!", err)
+	}
+}
+
+func TestService_Export_Success(t *testing.T) {
+	svc := Service{}
+
+	account, err := svc.RegisterAccount("+992000000001")
+	if err != nil {
+		t.Errorf("method RegisterAccount returned not nil error, account => %v", account)
+	}
+
+	err = svc.Deposit(account.ID, 100_00)
+	if err != nil {
+		t.Errorf("method Deposit returned not nil error, error => %v", err)
+	}
+
+	payment, err := svc.Pay(account.ID, 500, "auto")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	favorite, err := svc.FavoritePayment(payment.ID, "megafon")
+	if err != nil {
+		t.Errorf("FavoritePayment() Error() can't for an favorite(%v): %v", favorite, err)
+	}
+
+	account, err = svc.RegisterAccount("+992000000002")
+	if err != nil {
+		t.Errorf("method RegisterAccount returned not nil error, account => %v", account)
+	}
+
+	err = svc.Deposit(account.ID, 200_00)
+	if err != nil {
+		t.Errorf("method Deposit returned not nil error, error => %v", err)
+	}
+
+	wd, err := os.Getwd()
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = svc.Export(wd + "/test1")
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestService_Import_Success(t *testing.T) {
+	svc := Service{}
+
+	account, err := svc.RegisterAccount("+992000000003")
+	if err != nil {
+		t.Errorf("method RegisterAccount returned not nil error, account => %v", account)
+	}
+
+	err = svc.Deposit(account.ID, 300_00)
+	if err != nil {
+		t.Errorf("method Deposit returned not nil error, error => %v", err)
+	}
+
+	wd, err := os.Getwd()
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = svc.Import(wd + "/test1")
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestService_Import_Fail(t *testing.T) {
+	svc := Service{}
+
+	wd, err := os.Getwd()
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = svc.Import(wd + "/..")
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestService_Import_ParseError(t *testing.T) {
+	svc := Service{}
+
+	wd, err := os.Getwd()
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = svc.Import(wd + "/test2")
+	if err == nil {
+		t.Error(err)
+	}
+}
+
+func TestService_Import_ParseErrorID(t *testing.T) {
+	svc := Service{}
+
+	wd, err := os.Getwd()
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = svc.Import(wd + "/test3")
+	if err == nil {
+		t.Error(err)
+	}
+}
+
+func TestService_Import_TooLessArguments(t *testing.T) {
+	svc := Service{}
+
+	wd, err := os.Getwd()
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = svc.Import(wd + "/test4")
+	if err != nil {
+		t.Error(err)
 	}
 }
