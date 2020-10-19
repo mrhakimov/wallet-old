@@ -749,9 +749,9 @@ func (s *Service) HistoryToFiles(payments []types.Payment, dir string, records i
 	return err
 }
 
-// Min returns the smaller of x or y.
-func Min(x, y int) int {
-	if x > y {
+// Min returns the smaller of x or y
+func Min(x int, y int) int {
+	if y <= x {
 		return y
 	}
 
@@ -771,18 +771,19 @@ func (s *Service) SumPayments(goroutines int) types.Money {
 	for i := 0; i < goroutines; i++ {
 		currentSum := types.Money(0)
 		index := i
+		payments := s.payments
 
-		go func(currentSum types.Money, i int) {
+		go func(currentSum types.Money, index int, payments []*types.Payment) {
 			defer wg.Done()
 
-			for j := i * paymentPerGoroutine; j < Min((i+1)*paymentPerGoroutine, len(s.payments)); j++ {
-				currentSum += s.payments[j].Amount
+			for j := index * paymentPerGoroutine; j < Min((index+1)*paymentPerGoroutine, len(payments)); j++ {
+				currentSum += payments[j].Amount
 			}
 
 			mu.Lock()
 			result += currentSum
 			mu.Unlock()
-		}(currentSum, index)
+		}(currentSum, index, payments)
 	}
 
 	wg.Wait()

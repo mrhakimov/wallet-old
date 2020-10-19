@@ -496,3 +496,28 @@ func TestService_SumPayments(t *testing.T) {
 		return
 	}
 }
+
+func BenchmarkSumPayments(b *testing.B) {
+	want := types.Money(3000_00)
+	for i := 0; i < b.N; i++ {
+		svc := Service{}
+
+		account, err := svc.RegisterAccount("+992000000001")
+		if err != nil {
+			b.Errorf("method RegisterAccount returned not nil error, account => %v", account)
+		}
+
+		account.Balance = 300_000_00
+
+		_, err = svc.Pay(account.ID, types.Money(3000_00), types.PaymentCategory("OK"))
+		if err != nil {
+			b.Error(err)
+			return
+		}
+
+		result := svc.SumPayments(1)
+		if want != result {
+			b.Fatalf("invalid result, got %v, want %v", result, want)
+		}
+	}
+}
