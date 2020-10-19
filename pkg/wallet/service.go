@@ -767,6 +767,9 @@ func (s *Service) SumPayments(goroutines int) types.Money {
 	result := types.Money(0)
 
 	paymentPerGoroutine := len(s.payments) / goroutines
+	if len(s.payments)%goroutines != 0 {
+		paymentPerGoroutine++
+	}
 
 	for i := 0; i < goroutines; i++ {
 		currentSum := types.Money(0)
