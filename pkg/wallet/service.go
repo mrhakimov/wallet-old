@@ -361,9 +361,14 @@ func WriteAccountsToFile(filePath string, accounts []*types.Account) error {
 		}
 	}()
 
-	for _, account := range accounts {
-		_, err := file.Write([]byte(strconv.FormatInt(account.ID, 10) + ";" +
-			string(account.Phone) + ";" + strconv.FormatInt(int64(account.Balance), 10) + "\n"))
+	for index, account := range accounts {
+		nl := ""
+		if index != 0 {
+			nl = "\n"
+		}
+
+		_, err := file.Write([]byte(nl + strconv.FormatInt(account.ID, 10) + ";" +
+			string(account.Phone) + ";" + strconv.FormatInt(int64(account.Balance), 10)))
 
 		if err != nil {
 			log.Print(err)
@@ -393,10 +398,15 @@ func WritePaymentsToFile(filePath string, payments []*types.Payment) error {
 		}
 	}()
 
-	for _, payment := range payments {
-		_, err := file.Write([]byte(payment.ID + ";" + strconv.FormatInt(payment.AccountID, 10) + ";" +
+	for index, payment := range payments {
+		nl := ""
+		if index != 0 {
+			nl = "\n"
+		}
+
+		_, err := file.Write([]byte(nl + payment.ID + ";" + strconv.FormatInt(payment.AccountID, 10) + ";" +
 			strconv.FormatInt(int64(payment.Amount), 10) + ";" + string(payment.Category) + ";" +
-			string(payment.Status) + "\n"))
+			string(payment.Status)))
 
 		if err != nil {
 			log.Print(err)
@@ -426,10 +436,15 @@ func WriteFavoritesToFile(filePath string, favorites []*types.Favorite) error {
 		}
 	}()
 
-	for _, favorite := range favorites {
-		_, err := file.Write([]byte(favorite.ID + ";" + strconv.FormatInt(favorite.AccountID, 10) + ";" +
+	for index, favorite := range favorites {
+		nl := ""
+		if index != 0 {
+			nl = "\n"
+		}
+
+		_, err := file.Write([]byte(nl + favorite.ID + ";" + strconv.FormatInt(favorite.AccountID, 10) + ";" +
 			favorite.Name + ";" + strconv.FormatInt(int64(favorite.Amount), 10) + ";" +
-			string(favorite.Category) + "\n"))
+			string(favorite.Category)))
 
 		if err != nil {
 			log.Print(err)
@@ -512,6 +527,7 @@ func UpdateAccountsFromFile(s *Service, filePath string) error {
 
 		foundAccount, _ := s.FindAccountByID(account.ID)
 		if foundAccount == nil {
+			s.nextAccountID++
 			s.accounts = append(s.accounts, account)
 			return nil
 		}

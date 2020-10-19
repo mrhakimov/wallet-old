@@ -403,3 +403,17 @@ func TestService_Import_TooLessArguments(t *testing.T) {
 		t.Error(err)
 	}
 }
+
+func TestService_Import_ParsingError(t *testing.T) {
+	svc := Service{}
+
+	wd, err := os.Getwd()
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = svc.Import(wd + "/test5")
+	if err != nil {
+		t.Error(err)
+	}
+}
