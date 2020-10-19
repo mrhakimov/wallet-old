@@ -1,6 +1,7 @@
 package wallet
 
 import (
+	"fmt"
 	"os"
 	"reflect"
 	"testing"
@@ -454,5 +455,44 @@ func TestService_HistoryToFiles_Multiple(t *testing.T) {
 	err = svc.HistoryToFiles(payments, dir+"/test1", 1)
 	if err != nil {
 		t.Error(err)
+	}
+}
+
+func TestService_SumPayments(t *testing.T) {
+	svc := Service{}
+
+	account, err := svc.RegisterAccount("+992000000001")
+	if err != nil {
+		t.Errorf("method RegisterAccount returned not nil error, account => %v", account)
+	}
+
+	account.Balance = 300_000_00
+
+	var payments []types.Payment = nil
+	payment, err := svc.Pay(account.ID, types.Money(3000_00), types.PaymentCategory("OK"))
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	payments = append(payments, *payment)
+
+	payment, err = svc.Pay(account.ID, types.Money(1000_00), types.PaymentCategory("OK"))
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	payments = append(payments, *payment)
+
+	for _, payment := range payments {
+		fmt.Println(payment.Amount)
+	}
+
+	sum := svc.SumPayments(2)
+	fmt.Println(sum)
+	if sum != 4000_00 {
+		t.Error(err)
+		return
 	}
 }

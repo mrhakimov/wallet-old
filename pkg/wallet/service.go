@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/google/uuid"
 
@@ -746,4 +747,45 @@ func (s *Service) HistoryToFiles(payments []types.Payment, dir string, records i
 	}
 
 	return err
+}
+
+// Min returns the smaller of x or y.
+func Min(x, y int) int {
+	if x > y {
+		return y
+	}
+
+	return x
+}
+
+// SumPayments calculates the sum of all payments using goroutines
+func (s *Service) SumPayments(goroutines int) types.Money {
+	wg := sync.WaitGroup{}
+	wg.Add(goroutines)
+
+	mu := sync.Mutex{}
+	result := types.Money(0)
+
+	paymentPerGoroutine := len(s.payments) / goroutines
+
+	for i := 0; i < goroutines; i++ {
+		currentSum := types.Money(0)
+		index := i
+
+		go func(currentSum types.Money, i int) {
+			defer wg.Done()
+
+			for j := i * paymentPerGoroutine; j < Min((i+1)*paymentPerGoroutine, len(s.payments)); j++ {
+				currentSum += s.payments[j].Amount
+			}
+
+			mu.Lock()
+			result += currentSum
+			mu.Unlock()
+		}(currentSum, index)
+	}
+
+	wg.Wait()
+
+	return result
 }
