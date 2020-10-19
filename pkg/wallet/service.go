@@ -793,3 +793,50 @@ func (s *Service) SumPayments(goroutines int) types.Money {
 
 	return result
 }
+
+// FilterPayments accepts accountID and finds all accounts with such an ID using goroutines
+func (s *Service) FilterPayments(accountID int64, goroutines int) ([]types.Payment, error) {
+	foundPayments, err := s.ExportAccountHistory(accountID)
+	if err != nil {
+		return nil, err
+	}
+
+	if goroutines <= 1 {
+		return foundPayments, nil
+	}
+
+	wg := sync.WaitGroup{}
+	wg.Add(goroutines)
+
+	mu := sync.Mutex{}
+	var result []types.Payment = nil
+
+	paymentPerGoroutine := len(s.payments) / goroutines
+	if len(s.payments)%goroutines != 0 {
+		paymentPerGoroutine++
+	}
+
+	for i := 0; i < goroutines; i++ {
+		var currentAccounts []types.Payment = nil
+		index := i
+		payments := s.payments
+
+		go func(index int) {
+			defer wg.Done()
+
+			for j := index * paymentPerGoroutine; j < Min((index+1)*paymentPerGoroutine, len(payments)); j++ {
+				if payments[j].AccountID == accountID {
+					currentAccounts = append(currentAccounts, *payments[j])
+				}
+			}
+
+			mu.Lock()
+			result = append(result, currentAccounts...)
+			mu.Unlock()
+		}(index)
+	}
+
+	wg.Wait()
+
+	return result, nil
+}

@@ -521,3 +521,27 @@ func BenchmarkSumPayments(b *testing.B) {
 		}
 	}
 }
+
+func BenchmarkFilterPayments(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		svc := Service{}
+
+		account, err := svc.RegisterAccount("+992000000001")
+		if err != nil {
+			b.Errorf("method RegisterAccount returned not nil error, account => %v", account)
+		}
+
+		account.Balance = 300_000_00
+
+		_, err = svc.Pay(account.ID, types.Money(3000_00), types.PaymentCategory("OK"))
+		if err != nil {
+			b.Error(err)
+			return
+		}
+
+		result, _ := svc.FilterPayments(account.ID, 5)
+		if len(result) != 1 {
+			b.Fatal()
+		}
+	}
+}
