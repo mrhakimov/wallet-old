@@ -278,10 +278,10 @@ func (s *Service) ImportFromFile(path string) error {
 	}()
 
 	result := make([]byte, 0)
-	buff := make([]byte, 4)
+	bufferf := make([]byte, 4)
 
 	for {
-		read, err := file.Read(buff)
+		read, err := file.Read(bufferf)
 
 		if err == io.EOF {
 			break
@@ -293,7 +293,7 @@ func (s *Service) ImportFromFile(path string) error {
 			return err
 		}
 
-		result = append(result, buff[:read]...)
+		result = append(result, bufferf[:read]...)
 	}
 
 	str := string(result)
@@ -458,8 +458,7 @@ func WriteFavoritesToFile(filePath string, favorites []*types.Favorite) error {
 
 // Import is used to update accounts, payments and favorites state from given files
 func (s *Service) Import(dir string) error {
-	dirAccount := dir + "/accounts.dump"
-	fileAccount, err := os.Open(dirAccount)
+	fileAccounts, err := os.Open(dir + "/accounts.dump")
 
 	if err != nil {
 		log.Print(err)
@@ -468,61 +467,63 @@ func (s *Service) Import(dir string) error {
 
 	if err != ErrFileNotFound {
 		defer func() {
-			err := fileAccount.Close()
+			err := fileAccounts.Close()
 			if err != nil {
 				log.Print(err)
 			}
 		}()
 
 		content := make([]byte, 0)
-		buf := make([]byte, 4)
+		buffer := make([]byte, 4)
 
 		for {
-			read, err := fileAccount.Read(buf)
+			read, err := fileAccounts.Read(buffer)
 			if err == io.EOF {
 				break
 			}
-			content = append(content, buf[:read]...)
+
+			content = append(content, buffer[:read]...)
 		}
 
-		newData := strings.Split(string(content), "\n")
+		data := strings.Split(string(content), "\n")
 
-		for _, stroka := range newData {
+		for _, line := range data {
 			account := &types.Account{}
-			newData2 := strings.Split(stroka, ";")
-			for ind, stroka2 := range newData2 {
-				if ind == 0 {
-					id, _ := strconv.ParseInt(stroka2, 10, 64)
-					account.ID = id
-				}
-				if ind == 1 {
-					account.Phone = types.Phone(stroka2)
-				}
-				if ind == 2 {
-					balance, _ := strconv.ParseInt(stroka2, 10, 64)
-					account.Balance = types.Money(balance)
+			words := strings.Split(line, ";")
 
+			for index, word := range words {
+				switch index {
+				case 0:
+					id, _ := strconv.ParseInt(word, 10, 64)
+					account.ID = id
+					break
+				case 1:
+					account.Phone = types.Phone(word)
+					break
+				case 2:
+					balance, _ := strconv.ParseInt(word, 10, 64)
+					account.Balance = types.Money(balance)
+					break
 				}
 			}
 
-			errExist := 1
+			exists := false
 			for _, accountCheck := range s.accounts {
-
 				if accountCheck.ID == account.ID {
 					accountCheck.Phone = account.Phone
 					accountCheck.Balance = account.Balance
-					errExist = 0
+					exists = true
 				}
 
 			}
-			if errExist == 1 {
+
+			if !exists {
 				s.accounts = append(s.accounts, account)
 			}
 		}
 	}
 
-	dirPayment := dir + "/payments.dump"
-	filePayments, err := os.Open(dirPayment)
+	filePayments, err := os.Open(dir + "/payments.dump")
 
 	if err != nil {
 		log.Print(err)
@@ -540,64 +541,63 @@ func (s *Service) Import(dir string) error {
 		log.Printf("%#v", filePayments)
 
 		contentPayment := make([]byte, 0)
-		bufPayment := make([]byte, 4)
+		bufferPayment := make([]byte, 4)
+
 		for {
-			read, err := filePayments.Read(bufPayment)
+			read, err := filePayments.Read(bufferPayment)
 			if err == io.EOF {
 				break
 			}
-			contentPayment = append(contentPayment, bufPayment[:read]...)
+
+			contentPayment = append(contentPayment, bufferPayment[:read]...)
 		}
 
-		newDataPayment := strings.Split(string(contentPayment), "\n")
+		dataPayment := strings.Split(string(contentPayment), "\n")
 
-		for _, stroka := range newDataPayment {
+		for _, line := range dataPayment {
 			payment := &types.Payment{}
-			newData2 := strings.Split(stroka, ";")
-			for ind, stroka2 := range newData2 {
-				if ind == 0 {
-					payment.ID = stroka2
-				}
+			words := strings.Split(line, ";")
 
-				if ind == 1 {
-					accountID, _ := strconv.ParseInt(stroka2, 10, 64)
+			for index, word := range words {
+				switch index {
+				case 0:
+					payment.ID = word
+					break
+				case 1:
+					accountID, _ := strconv.ParseInt(word, 10, 64)
 					payment.AccountID = int64(accountID)
-				}
-
-				if ind == 2 {
-					balance, _ := strconv.ParseInt(stroka2, 10, 64)
+					break
+				case 2:
+					balance, _ := strconv.ParseInt(word, 10, 64)
 					payment.Amount = types.Money(balance)
-				}
-
-				if ind == 3 {
-					payment.Category = types.PaymentCategory(stroka2)
-				}
-
-				if ind == 4 {
-					payment.Status = types.PaymentStatus(stroka2)
+					break
+				case 3:
+					payment.Category = types.PaymentCategory(word)
+					break
+				case 4:
+					payment.Status = types.PaymentStatus(word)
+					break
 				}
 			}
 
-			errExist := 1
+			exists := false
 			for _, paymentCheck := range s.payments {
-
 				if paymentCheck.ID == payment.ID {
 					paymentCheck.AccountID = payment.AccountID
 					paymentCheck.Amount = payment.Amount
 					paymentCheck.Category = payment.Category
 					paymentCheck.Status = payment.Status
-					errExist = 0
+					exists = true
 				}
-
 			}
-			if errExist == 1 {
+
+			if !exists {
 				s.payments = append(s.payments, payment)
 			}
 		}
 	}
 
-	dirFavorite := dir + "/favorites.dump"
-	fileFavorites, err := os.Open(dirFavorite)
+	fileFavorites, err := os.Open(dir + "/favorites.dump")
 	if err != nil {
 		log.Print(err)
 		err = ErrFileNotFound
@@ -614,58 +614,56 @@ func (s *Service) Import(dir string) error {
 		log.Printf("%#v", fileFavorites)
 
 		contentFavorite := make([]byte, 0)
-		bufFavorite := make([]byte, 4)
+		bufferFavorite := make([]byte, 4)
+
 		for {
-			read, err := fileFavorites.Read(bufFavorite)
+			read, err := fileFavorites.Read(bufferFavorite)
 			if err == io.EOF {
 				break
 			}
-			contentFavorite = append(contentFavorite, bufFavorite[:read]...)
+
+			contentFavorite = append(contentFavorite, bufferFavorite[:read]...)
 		}
 
-		dataFavorite := string(contentFavorite)
-		newDataFavorite := strings.Split(dataFavorite, "\n")
+		dataFavorite := strings.Split(string(contentFavorite), "\n")
 
-		for _, stroka := range newDataFavorite {
+		for _, line := range dataFavorite {
 			favorite := &types.Favorite{}
-			newData2 := strings.Split(stroka, ";")
-			for ind, stroka2 := range newData2 {
-				if ind == 0 {
-					favorite.ID = stroka2
-				}
-
-				if ind == 1 {
-					accountID, _ := strconv.ParseInt(stroka2, 10, 64)
+			words := strings.Split(line, ";")
+			for index, word := range words {
+				switch index {
+				case 0:
+					favorite.ID = word
+					break
+				case 1:
+					accountID, _ := strconv.ParseInt(word, 10, 64)
 					favorite.AccountID = int64(accountID)
-				}
-
-				if ind == 2 {
-					favorite.Name = stroka2
-				}
-				if ind == 3 {
-					balance, _ := strconv.ParseInt(stroka2, 10, 64)
+					break
+				case 2:
+					favorite.Name = word
+					break
+				case 3:
+					balance, _ := strconv.ParseInt(word, 10, 64)
 					favorite.Amount = types.Money(balance)
-				}
-
-				if ind == 4 {
-					favorite.Category = types.PaymentCategory(stroka2)
+					break
+				case 4:
+					favorite.Category = types.PaymentCategory(word)
+					break
 				}
 			}
 
-			errExist := 1
+			exists := false
 			for _, favoriteCheck := range s.favorites {
-
 				if favoriteCheck.ID == favorite.ID {
 					favoriteCheck.AccountID = favorite.AccountID
 					favoriteCheck.Name = favorite.Name
 					favoriteCheck.Amount = favorite.Amount
 					favoriteCheck.Category = favorite.Category
-					errExist = 0
+					exists = true
 				}
-
 			}
 
-			if errExist == 1 {
+			if !exists {
 				s.favorites = append(s.favorites, favorite)
 			}
 		}
