@@ -362,58 +362,97 @@ func TestService_Import_Fail(t *testing.T) {
 	}
 }
 
-// func TestService_Import_ParseError(t *testing.T) {
-// 	svc := Service{}
+func TestService_ExportAccountHistory_Success(t *testing.T) {
+	svc := Service{}
 
-// 	wd, err := os.Getwd()
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
+	account, err := svc.RegisterAccount("+992000000001")
+	if err != nil {
+		t.Errorf("method RegisterAccount returned not nil error, account => %v", account)
+	}
 
-// 	err = svc.Import(wd + "/test2")
-// 	if err == nil {
-// 		t.Error(err)
-// 	}
-// }
+	account.Balance = 300_000_00
 
-// func TestService_Import_ParseErrorID(t *testing.T) {
-// 	svc := Service{}
+	var payments []types.Payment = nil
+	payment, err := svc.Pay(account.ID, types.Money(3000_00), types.PaymentCategory("OK"))
+	if err != nil {
+		t.Error(err)
+		return
+	}
 
-// 	wd, err := os.Getwd()
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
+	payments = append(payments, *payment)
+	foundPayments, err := svc.ExportAccountHistory(account.ID)
+	if err != nil {
+		t.Error(err)
+	}
 
-// 	err = svc.Import(wd + "/test3")
-// 	if err == nil {
-// 		t.Error(err)
-// 	}
-// }
+	if !reflect.DeepEqual(foundPayments, payments) {
+		t.Error(err)
+	}
+}
 
-// func TestService_Import_TooLessArguments(t *testing.T) {
-// 	svc := Service{}
+func TestService_HistoryToFiles_Success(t *testing.T) {
+	svc := Service{}
 
-// 	wd, err := os.Getwd()
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
+	account, err := svc.RegisterAccount("+992000000001")
+	if err != nil {
+		t.Errorf("method RegisterAccount returned not nil error, account => %v", account)
+	}
 
-// 	err = svc.Import(wd + "/test4")
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
-// }
+	account.Balance = 300_000_00
 
-// func TestService_Import_ParsingError(t *testing.T) {
-// 	svc := Service{}
+	var payments []types.Payment = nil
+	payment, err := svc.Pay(account.ID, types.Money(3000_00), types.PaymentCategory("OK"))
+	if err != nil {
+		t.Error(err)
+		return
+	}
 
-// 	wd, err := os.Getwd()
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
+	payments = append(payments, *payment)
 
-// 	err = svc.Import(wd + "/test5")
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
-// }
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = svc.HistoryToFiles(payments, dir+"/test1", 1)
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestService_HistoryToFiles_Multiple(t *testing.T) {
+	svc := Service{}
+
+	account, err := svc.RegisterAccount("+992000000001")
+	if err != nil {
+		t.Errorf("method RegisterAccount returned not nil error, account => %v", account)
+	}
+
+	account.Balance = 300_000_00
+
+	var payments []types.Payment = nil
+	payment, err := svc.Pay(account.ID, types.Money(3000_00), types.PaymentCategory("OK"))
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	payments = append(payments, *payment)
+
+	payment, err = svc.Pay(account.ID, types.Money(1000_00), types.PaymentCategory("OK"))
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	payments = append(payments, *payment)
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = svc.HistoryToFiles(payments, dir+"/test1", 1)
+	if err != nil {
+		t.Error(err)
+	}
+}

@@ -2,6 +2,7 @@ package wallet
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -296,9 +297,9 @@ func (s *Service) ImportFromFile(path string) error {
 		result = append(result, bufferf[:read]...)
 	}
 
-	str := string(result)
+	data := string(result)
 
-	for _, line := range strings.Split(str, "|") {
+	for _, line := range strings.Split(data, "|") {
 		if len(line) == 0 {
 			return err
 		}
@@ -670,4 +671,79 @@ func (s *Service) Import(dir string) error {
 	}
 
 	return nil
+}
+
+// ExportAccountHistory returns all payments of given user (by their accountID)
+func (s *Service) ExportAccountHistory(accountID int64) ([]types.Payment, error) {
+	_, err := s.FindAccountByID(accountID)
+	if err != nil {
+		return nil, ErrAccountNotFound
+	}
+
+	var payments []types.Payment = nil
+	for _, payment := range s.payments {
+		if payment.AccountID == accountID {
+			payments = append(payments, *payment)
+		}
+	}
+
+	if payments == nil {
+		return nil, ErrAccountNotFound
+	}
+
+	return payments, nil
+}
+
+// HistoryToFiles is used to create backup files from payments history
+func (s *Service) HistoryToFiles(payments []types.Payment, dir string, records int) error {
+	if len(payments) == 0 {
+		return nil
+	}
+
+	var err error
+	if len(payments) <= records {
+		file, _ := os.OpenFile(dir+"/payments.dump", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
+		defer func() {
+			err = file.Close()
+			if err != nil {
+				log.Print(err)
+			}
+		}()
+
+		var data string
+		for _, account := range payments {
+			data += fmt.Sprint(account.ID) + ";" + fmt.Sprint(account.AccountID) + ";" +
+				fmt.Sprint(account.Amount) + ";" + fmt.Sprint(account.Category) + ";" +
+				fmt.Sprint(account.Status) + "\n"
+		}
+
+		_, err = file.WriteString("data")
+	} else {
+		var file *os.File
+		var data string
+		k := 0
+		t := 1
+
+		for _, account := range payments {
+			if k == 0 {
+				file, _ = os.OpenFile(dir+"/payments"+fmt.Sprint(t)+".dump", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
+			}
+			k++
+			data = fmt.Sprint(account.ID) + ";" + fmt.Sprint(account.AccountID) + ";" +
+				fmt.Sprint(account.Amount) + ";" + fmt.Sprint(account.Category) + ";" +
+				fmt.Sprint(account.Status) + "\n"
+
+			_, err = file.Write([]byte(data))
+
+			if k == records {
+				data = ""
+				k = 0
+				t++
+
+				err = file.Close()
+			}
+		}
+	}
+
+	return err
 }
