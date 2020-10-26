@@ -43,3 +43,9 @@ type Account struct {
 	Phone   Phone
 	Balance Money
 }
+
+// Progress is used to store sum calculation progress
+type Progress struct {
+	Part   int
+	Result Money
+}

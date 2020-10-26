@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/MrHakimov/wallet/pkg/types"
+	"github.com/google/uuid"
 )
 
 func TestService_RegisterAccount_success(t *testing.T) {
@@ -522,6 +523,11 @@ func BenchmarkSumPayments(b *testing.B) {
 	}
 }
 
+// testFilter is just a test function
+func testFilter(payment types.Payment) bool {
+	return payment.AccountID == globalAccountID
+}
+
 func BenchmarkFilterPayments(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		svc := Service{}
@@ -539,9 +545,43 @@ func BenchmarkFilterPayments(b *testing.B) {
 			return
 		}
 
+		svc.FilterPaymentsByFn(testFilter, 5)
+
 		result, _ := svc.FilterPayments(account.ID, 5)
 		if len(result) != 1 {
 			b.Fatal()
 		}
 	}
+}
+
+func TestService_FilterPaymentsByFn(t *testing.T) {
+	svc := Service{}
+
+	account, err := svc.RegisterAccount("+992000000001")
+	if err != nil {
+		t.Errorf("method RegisterAccount returned not nil error, account => %v", account)
+	}
+
+	account.Balance = 300_000_00
+
+	_, err = svc.Pay(account.ID, types.Money(3000_00), types.PaymentCategory("OK"))
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	svc.FilterPaymentsByFn(testFilter, 5)
+}
+
+func TestService_SumPaymentsWithProgress(t *testing.T) {
+	svc := Service{}
+	for i := 0; i < 300_000; i++ {
+		payment := &types.Payment{
+			ID:     uuid.New().String(),
+			Amount: types.Money(100_00),
+		}
+		svc.payments = append(svc.payments, payment)
+	}
+
+	svc.SumPaymentsWithProgress()
 }

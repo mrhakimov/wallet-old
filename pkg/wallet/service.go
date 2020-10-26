@@ -852,3 +852,32 @@ func (s *Service) FilterPayments(accountID int64, goroutines int) ([]types.Payme
 
 	return s.FilterPaymentsByFn(filterByAccountID, goroutines)
 }
+
+//SumPaymentsWithProgress is used to calculate payments' amount using channels
+func (s *Service) SumPaymentsWithProgress() <-chan types.Progress {
+	ch := make(chan types.Progress, 1)
+	defer close(ch)
+
+	if s.payments == nil {
+		return ch
+	}
+
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+
+	go func(ch chan types.Progress) {
+		defer wg.Done()
+
+		sum := types.Progress{}
+
+		for _, value := range s.payments {
+			sum.Result += value.Amount
+		}
+
+		ch <- sum
+	}(ch)
+
+	wg.Wait()
+
+	return ch
+}
